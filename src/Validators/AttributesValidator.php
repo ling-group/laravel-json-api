@@ -140,7 +140,8 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
         $callback = $this->callback;
 
         if ($callback) {
-            $callback($validator);
+            // $callback($validator);
+            $validator->after($callback);
         }
     }
 

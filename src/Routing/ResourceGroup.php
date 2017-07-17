@@ -190,7 +190,11 @@ class ResourceGroup
             return $this->baseUrl();
         }
 
-        return $this->resourceUrl();
+        if (in_array($action, $this->verbs, true)) {
+            return $this->resourceUrl();
+        }
+
+        return $action;
     }
 
     /**
