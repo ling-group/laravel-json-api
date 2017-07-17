@@ -34,6 +34,8 @@ class ResourceGroup
 
     use RegistersResources;
 
+    private $verbs = ['index', 'create', 'read', 'update', 'delete'];
+
     /**
      * @var ApiResource
      */
@@ -85,10 +87,12 @@ class ResourceGroup
         $authorizer = $this->authorizer();
         $validators = $this->validators();
 
-        return array_merge($middleware, array_filter([
+        $a = array_merge($middleware, array_filter([
             $authorizer ? "json-api.authorize:$authorizer" : null,
             $validators ? "json-api.validate:$validators" : null,
         ]));
+
+        return $a;
     }
 
     /**
@@ -130,7 +134,13 @@ class ResourceGroup
      */
     protected function resourceActions()
     {
-        return $this->diffActions(['index', 'create', 'read', 'update', 'delete'], $this->options);
+        return $this->diffActions(
+            array_merge(
+                $this->verbs,
+                array_keys($this->options->get('custom_methods', []))
+            ),
+            $this->options
+        );
     }
 
     /**
@@ -156,12 +166,18 @@ class ResourceGroup
      */
     protected function resourceRoute(Registrar $router, $action)
     {
-        return $this->createRoute(
+        $route = $this->createRoute(
             $router,
             $this->routeMethod($action),
             $this->routeUrl($action),
             $this->routeAction($action)
         );
+
+        if (! in_array($action, $this->verbs)) {
+            $route->setUri($action);
+        }
+
+        return $route;
     }
 
     /**
@@ -202,8 +218,13 @@ class ResourceGroup
             'update' => 'patch',
             'delete' => 'delete',
         ];
-
-        return $methods[$action];
+        if (isset($methods[$action])) {
+            return $methods[$action];
+        } else {
+            if (isset($this->options->get('custom_methods', [])[$action])) {
+                return $this->options->get('custom_methods', [])[$action]['method'];
+            }
+        }
     }
 
     /**
@@ -215,3 +236,4 @@ class ResourceGroup
         return sprintf('%s@%s', $this->controller(), $action);
     }
 }
+

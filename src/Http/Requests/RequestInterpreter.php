@@ -92,4 +92,20 @@ class RequestInterpreter extends AbstractRequestInterpreter
         return $this->isRelationship() && $this->request->is('*/relationships/*');
     }
 
+    /**
+     * Is this a request where we expect a document to be sent by the client?
+     *
+     * @return bool
+     */
+    public function isExpectingDocument()
+    {
+        return true;
+        // return $this->isCreateResource() ||
+            // $this->isUpdateResource() ||
+            // $this->isReplaceRelationship() ||
+            // $this->isAddToRelationship() ||
+            // $this->isRemoveFromRelationship();
+    }
 }
+
+
